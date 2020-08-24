@@ -950,7 +950,7 @@ export default class VideoPlayer extends Component {
             {backControl}
             <View style={styles.controls.pullRight}>
               {volumeControl}
-              {fullscreenControl}
+//               {fullscreenControl}
             </View>
           </SafeAreaView>
         </ImageBackground>
@@ -1024,7 +1024,10 @@ export default class VideoPlayer extends Component {
     const playPauseControl = this.props.disablePlayPause
       ? this.renderNullControl()
       : this.renderPlayPause();
-
+    const fullscreenControl = this.props.disableFullscreen
+      ? this.renderNullControl()
+      : this.renderFullscreen();
+    
     return (
       <Animated.View
         style={[
@@ -1044,6 +1047,7 @@ export default class VideoPlayer extends Component {
             {playPauseControl}
             {this.renderTitle()}
             {timerControl}
+            {fullscreenControl}
           </SafeAreaView>
         </ImageBackground>
       </Animated.View>
