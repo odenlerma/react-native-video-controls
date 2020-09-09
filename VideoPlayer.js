@@ -950,7 +950,6 @@ export default class VideoPlayer extends Component {
             {backControl}
             <View style={styles.controls.pullRight}>
               {volumeControl}
-//               {fullscreenControl}
             </View>
           </SafeAreaView>
         </ImageBackground>
@@ -1011,6 +1010,37 @@ export default class VideoPlayer extends Component {
     );
   }
 
+
+  /** 
+   * 
+   * 
+   */
+
+  renderPlayPauseControls() {
+    const playPauseControl = this.props.disablePlayPause
+    ? this.renderNullControl()
+    : this.renderPlayPause();
+    return (
+      <Animated.View
+        style={[
+          styles.controls.centerContainer,
+          {
+            opacity: this.animations.bottomControl.opacity,
+            marginBottom: this.animations.bottomControl.marginBottom,
+          },
+        ]}>
+          <View style={styles.loader.container}>
+            <SafeAreaView
+              style={[styles.controls.row]}>
+              {playPauseControl}
+            </SafeAreaView>
+          </View>
+        </Animated.View>
+      
+    );
+
+  }
+
   /**
    * Render bottom control group and wrap it in a holder
    */
@@ -1021,9 +1051,6 @@ export default class VideoPlayer extends Component {
     const seekbarControl = this.props.disableSeekbar
       ? this.renderNullControl()
       : this.renderSeekbar();
-    const playPauseControl = this.props.disablePlayPause
-      ? this.renderNullControl()
-      : this.renderPlayPause();
     const fullscreenControl = this.props.disableFullscreen
       ? this.renderNullControl()
       : this.renderFullscreen();
@@ -1037,19 +1064,19 @@ export default class VideoPlayer extends Component {
             marginBottom: this.animations.bottomControl.marginBottom,
           },
         ]}>
+        <SafeAreaView
+            style={[styles.controls.row, styles.controls.bottomControlGroup]}>
+            {timerControl}
+            {fullscreenControl}
+        </SafeAreaView>
         <ImageBackground
           source={require('./assets/img/bottom-vignette.png')}
           style={[styles.controls.column]}
           imageStyle={[styles.controls.vignette]}>
           {seekbarControl}
-          <SafeAreaView
-            style={[styles.controls.row, styles.controls.bottomControlGroup]}>
-            {playPauseControl}
-            {this.renderTitle()}
-            {timerControl}
-            {fullscreenControl}
-          </SafeAreaView>
+         
         </ImageBackground>
+        
       </Animated.View>
     );
   }
@@ -1213,6 +1240,7 @@ export default class VideoPlayer extends Component {
           {this.renderError()}
           {this.renderLoader()}
           {this.renderTopControls()}
+          {this.renderPlayPauseControls()}
           {this.renderBottomControls()}
         </View>
       </TouchableWithoutFeedback>
@@ -1309,11 +1337,20 @@ const styles = {
       flex: 1,
       alignItems: 'stretch',
       justifyContent: 'flex-start',
+      backgroundColor: 'rgba(0, 0, 0, 0.4)'
     },
     bottom: {
       alignItems: 'stretch',
-      flex: 2,
+      flex: 1,
       justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0, 0, 0, 0.4)'
+    },
+    centerContainer: {
+      alignItems: 'stretch',
+      flex: 2,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.4)'
     },
     topControlGroup: {
       alignSelf: 'stretch',
@@ -1328,9 +1365,8 @@ const styles = {
       alignSelf: 'stretch',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginLeft: 12,
-      marginRight: 12,
       marginBottom: 0,
+      
     },
     volume: {
       flexDirection: 'row',
@@ -1341,7 +1377,8 @@ const styles = {
     playPause: {
       position: 'relative',
       width: 80,
-      zIndex: 0,
+      alignItems: 'center',
+      zIndex: 0
     },
     title: {
       alignItems: 'center',
@@ -1353,7 +1390,7 @@ const styles = {
       textAlign: 'center',
     },
     timer: {
-      width: 80,
+      width: 80
     },
     timerText: {
       backgroundColor: 'transparent',
@@ -1374,12 +1411,12 @@ const styles = {
     },
     track: {
       backgroundColor: '#333',
-      height: 1,
+      height: 4,
       marginLeft: 7,
     },
     fill: {
       backgroundColor: '#FFF',
-      height: 1,
+      height: 4,
     },
     handle: {
       position: 'absolute',
@@ -1399,15 +1436,15 @@ const styles = {
       marginRight: 20,
     },
     track: {
-      backgroundColor: '#333',
-      height: 1,
+      backgroundColor: '#5a606d',
+      height: 4,
       position: 'relative',
       top: 14,
       width: '100%',
     },
     fill: {
-      backgroundColor: '#FFF',
-      height: 1,
+      backgroundColor: '#3e7fff',
+      height: 4,
       width: '100%',
     },
     handle: {
