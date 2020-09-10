@@ -14,6 +14,7 @@ import {
   Text,
 } from 'react-native';
 import padStart from 'lodash/padStart';
+import Feather from 'react-native-vector-icons/Feather'
 
 export default class VideoPlayer extends Component {
   static defaultProps = {
@@ -31,6 +32,12 @@ export default class VideoPlayer extends Component {
     volume: 1,
     title: '',
     rate: 1,
+    disableSettings: false,
+    onPause: ()=>{},
+    onPlay: ()=> {},
+    onSettings: ()=>{},
+    onSkipBack: ()=>{},
+    onSkipForward: ()=>{},
   };
 
   constructor(props) {
@@ -51,7 +58,7 @@ export default class VideoPlayer extends Component {
 
       isFullscreen:
         this.props.isFullScreen || this.props.resizeMode === 'cover' || false,
-      showTimeRemaining: true,
+      showTimeRemaining: false,
       volumeTrackWidth: 0,
       volumeFillWidth: 0,
       seekerFillWidth: 0,
@@ -95,8 +102,12 @@ export default class VideoPlayer extends Component {
       onProgress: this._onProgress.bind(this),
       onSeek: this._onSeek.bind(this),
       onLoad: this._onLoad.bind(this),
-      onPause: this.props.onPause,
-      onPlay: this.props.onPlay,
+      onPause: this.props.onPause.bind(this),
+      onPlay: this.props.onPlay.bind(this),
+      onSettings: this.props.onSettings.bind(this),
+      onSkipBack: this.props.onSkipBack.bind(this),
+      onSkipForward: this.props.onSkipForward.bind(this)
+
     };
 
     /**
@@ -113,7 +124,7 @@ export default class VideoPlayer extends Component {
      * Player information
      */
     this.player = {
-      controlTimeoutDelay: this.props.controlTimeout || 15000,
+      controlTimeoutDelay: this.props.controlTimeout || 5000,
       volumePanResponder: PanResponder,
       seekPanResponder: PanResponder,
       controlTimeout: null,
@@ -193,7 +204,6 @@ export default class VideoPlayer extends Component {
    */
   _onLoad(data = {}) {
     let state = this.state;
-
     state.duration = data.duration;
     state.loading = false;
     this.setState(state);
@@ -538,7 +548,9 @@ export default class VideoPlayer extends Component {
       return `-${this.formatTime(time)}`;
     }
 
-    return this.formatTime(this.state.currentTime);
+
+    const duration = this.formatTime(this.state.currentTime)+" / "+this.formatDuration(this.state.duration);
+    return duration;
   }
 
   /**
@@ -550,6 +562,22 @@ export default class VideoPlayer extends Component {
   formatTime(time = 0) {
     const symbol = this.state.showRemainingTime ? '-' : '';
     time = Math.min(Math.max(time, 0), this.state.duration);
+
+    const formattedMinutes = padStart(Math.floor(time / 60).toFixed(0), 2, 0);
+    const formattedSeconds = padStart(Math.floor(time % 60).toFixed(0), 2, 0);
+
+    return `${symbol}${formattedMinutes}:${formattedSeconds}`;
+  }
+
+
+  /**
+   * Format a time string as mm:ss
+   *
+   * @param {int} time time in milliseconds
+   * @return {string} formatted time string in mm:ss format
+   */
+  formatDuration(time = 0) {
+    const symbol = this.state.showRemainingTime ? '-' : '';
 
     const formattedMinutes = padStart(Math.floor(time / 60).toFixed(0), 2, 0);
     const formattedSeconds = padStart(Math.floor(time % 60).toFixed(0), 2, 0);
@@ -926,12 +954,10 @@ export default class VideoPlayer extends Component {
     const backControl = this.props.disableBack
       ? this.renderNullControl()
       : this.renderBack();
-    const volumeControl = this.props.disableVolume
+    const settings = this.props.disableSettings
       ? this.renderNullControl()
-      : this.renderVolume();
-    const fullscreenControl = this.props.disableFullscreen
-      ? this.renderNullControl()
-      : this.renderFullscreen();
+      : this.renderSettings();
+
 
     return (
       <Animated.View
@@ -948,8 +974,9 @@ export default class VideoPlayer extends Component {
           imageStyle={[styles.controls.vignette]}>
           <SafeAreaView style={styles.controls.topControlGroup}>
             {backControl}
+            
             <View style={styles.controls.pullRight}>
-              {volumeControl}
+              {settings}
             </View>
           </SafeAreaView>
         </ImageBackground>
@@ -962,14 +989,25 @@ export default class VideoPlayer extends Component {
    */
   renderBack() {
     return this.renderControl(
-      <Image
-        source={require('./assets/img/back.png')}
-        style={styles.controls.back}
-      />,
+      <Feather name='chevron-left' size={28} style={styles.controls.back,{color: '#fff', marginLeft: -5}}/>
+      ,
       this.events.onBack,
       styles.controls.back,
     );
   }
+
+  /**
+   * Settings button control
+   */
+  renderSettings() {
+    return this.renderControl(
+      <Feather name='more-vertical' size={24} style={{color: '#fff'}}/>
+      ,
+      this.events.onSettings,
+      styles.controls.back,
+    );
+  }
+
 
   /**
    * Render the volume slider and attach the pan handlers
@@ -999,16 +1037,42 @@ export default class VideoPlayer extends Component {
    * Render fullscreen toggle and set icon based on the fullscreen state.
    */
   renderFullscreen() {
-    let source =
+    let icon =
       this.state.isFullscreen === true
-        ? require('./assets/img/shrink.png')
-        : require('./assets/img/expand.png');
+        ? 'minimize'
+        : 'maximize';
     return this.renderControl(
-      <Image source={source} />,
+      <Feather name={icon} size={24} style={styles.controls.back,{color: '#fff'}}/>,
       this.methods.toggleFullscreen,
       styles.controls.fullscreen,
     );
   }
+
+
+  /**
+   * Reverse button control
+   */
+  renderSkipBack() {
+    return this.renderControl(
+      <Feather name='skip-back' size={24} style={{color: '#fff', marginRight: -16}}/>
+      ,
+      this.events.onSkipBack,
+      styles.controls.back,
+    );
+  }
+
+  /**
+   * Reverse button control
+   */
+  renderSkipForward() {
+    return this.renderControl(
+      <Feather name='skip-forward' size={24} style={{color: '#fff', marginLeft: -16}}/>
+      ,
+      this.events.onSkipForward,
+      styles.controls.back,
+    );
+  }
+
 
 
   /** 
@@ -1020,6 +1084,14 @@ export default class VideoPlayer extends Component {
     const playPauseControl = this.props.disablePlayPause
     ? this.renderNullControl()
     : this.renderPlayPause();
+
+    const skipBackControl = this.props.disableSkip
+    ? this.renderNullControl()
+    : this.renderSkipBack();
+
+    const skipForwardControl = this.props.disableSkip
+    ? this.renderNullControl()
+    : this.renderSkipForward();
     return (
       <Animated.View
         style={[
@@ -1032,7 +1104,9 @@ export default class VideoPlayer extends Component {
           <View style={styles.loader.container}>
             <SafeAreaView
               style={[styles.controls.row]}>
+              {skipBackControl}
               {playPauseControl}
+              {skipForwardControl}
             </SafeAreaView>
           </View>
         </Animated.View>
@@ -1061,7 +1135,7 @@ export default class VideoPlayer extends Component {
           styles.controls.bottom,
           {
             opacity: this.animations.bottomControl.opacity,
-            marginBottom: this.animations.bottomControl.marginBottom,
+            //marginBottom: this.animations.bottomControl.marginBottom,
           },
         ]}>
         <SafeAreaView
@@ -1074,7 +1148,6 @@ export default class VideoPlayer extends Component {
           style={[styles.controls.column]}
           imageStyle={[styles.controls.vignette]}>
           {seekbarControl}
-         
         </ImageBackground>
         
       </Animated.View>
@@ -1126,12 +1199,12 @@ export default class VideoPlayer extends Component {
    * Render the play/pause button and show the respective icon
    */
   renderPlayPause() {
-    let source =
+    let icon =
       this.state.paused === true
-        ? require('./assets/img/play.png')
-        : require('./assets/img/pause.png');
+        ? 'play'
+        : 'pause';
     return this.renderControl(
-      <Image source={source} />,
+      <Feather name={icon} size={34} style={{color: '#fff'}}/>,
       this.methods.togglePlayPause,
       styles.controls.playPause,
     );
@@ -1217,7 +1290,7 @@ export default class VideoPlayer extends Component {
   render() {
     return (
       <TouchableWithoutFeedback
-        onPress={this.events.onScreenTouch}
+        onPress={()=>{this.events.onScreenTouch; this._toggleControls()}}
         style={[styles.player.container, this.styles.containerStyle]}>
         <View style={[styles.player.container, this.styles.containerStyle]}>
           <Video
@@ -1320,7 +1393,7 @@ const styles = {
       resizeMode: 'stretch',
     },
     control: {
-      padding: 16,
+      paddingHorizontal: 16,
     },
     text: {
       backgroundColor: 'transparent',
@@ -1343,7 +1416,7 @@ const styles = {
       alignItems: 'stretch',
       flex: 1,
       justifyContent: 'flex-end',
-      backgroundColor: 'rgba(0, 0, 0, 0.4)'
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
     },
     centerContainer: {
       alignItems: 'stretch',
@@ -1358,15 +1431,15 @@ const styles = {
       justifyContent: 'space-between',
       flexDirection: 'row',
       width: null,
-      margin: 12,
+      //margin: 12,
       marginBottom: 18,
+      marginTop: 7
     },
     bottomControlGroup: {
       alignSelf: 'stretch',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 0,
-      
+      marginBottom: -10,
     },
     volume: {
       flexDirection: 'row',
@@ -1390,12 +1463,13 @@ const styles = {
       textAlign: 'center',
     },
     timer: {
-      width: 80
+      //width: 110
     },
     timerText: {
       backgroundColor: 'transparent',
       color: '#FFF',
-      fontSize: 11,
+      fontSize: 12,
+      fontFamily: 'Roboto',
       textAlign: 'right',
     },
   }),
@@ -1431,15 +1505,15 @@ const styles = {
   seekbar: StyleSheet.create({
     container: {
       alignSelf: 'stretch',
-      height: 28,
-      marginLeft: 20,
-      marginRight: 20,
+      height: 22,
+      //marginLeft: 20,
+      //marginRight: 20,
     },
     track: {
       backgroundColor: '#5a606d',
       height: 4,
       position: 'relative',
-      top: 14,
+      top: 16,
       width: '100%',
     },
     fill: {
@@ -1456,7 +1530,7 @@ const styles = {
     circle: {
       borderRadius: 12,
       position: 'relative',
-      top: 8,
+      top: 10,
       left: 8,
       height: 12,
       width: 12,
