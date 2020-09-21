@@ -539,9 +539,7 @@ export default class VideoPlayer extends Component {
   _onBack() {
     if (this.props.navigator && this.props.navigator.pop) {
       this.props.navigator.pop();
-    } else if (this.props.navigation && this.props.navigation.pop) {
-      this.props.navigation.pop();
-    }  else {
+    } else {
       console.warn(
         'Warning: _onBack requires navigator property to function. Either modify the onBack prop or pass a navigator prop',
       );
