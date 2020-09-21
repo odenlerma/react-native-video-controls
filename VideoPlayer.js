@@ -3,6 +3,8 @@ import Video from 'react-native-video';
 import {
   TouchableWithoutFeedback,
   TouchableHighlight,
+  TouchableOpacity,
+  TouchableNativeFeedback,
   ImageBackground,
   PanResponder,
   StyleSheet,
@@ -12,9 +14,14 @@ import {
   Image,
   View,
   Text,
+  Platform,
 } from 'react-native';
 import padStart from 'lodash/padStart';
 import Feather from 'react-native-vector-icons/Feather'
+import HeartTip from './assets/heart-tip.svg';
+import TipMe from './assets/tip-me.svg'
+
+const FlexButton = Platform.OS == 'ios' ? TouchableOpacity : TouchableNativeFeedback;
 
 export default class VideoPlayer extends Component {
   static defaultProps = {
@@ -38,6 +45,8 @@ export default class VideoPlayer extends Component {
     onSettings: ()=>{},
     onSkipBack: ()=>{},
     onSkipForward: ()=>{},
+    isLive: false,
+    onPressTip: ()=>{},
   };
 
   constructor(props) {
@@ -1041,11 +1050,26 @@ export default class VideoPlayer extends Component {
       this.state.isFullscreen === true
         ? 'minimize'
         : 'maximize';
-    return this.renderControl(
-      <Feather name={icon} size={24} style={styles.controls.back,{color: '#fff'}}/>,
-      this.methods.toggleFullscreen,
-      styles.controls.fullscreen,
-    );
+    return (
+      <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end'}}>
+        {this.props.isLive == true &&(
+            <FlexButton onPress={()=>{this.props.onPressTip()}} activeOpacity={1}>
+              <View style={{marginRight: 13, marginBottom: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                <View style={{marginRight: 7}}>
+                  <TipMe height={23} width={60}/>
+                </View>
+                <HeartTip height={32} width={32}/>
+              </View>
+            </FlexButton>
+         )}
+        {this.renderControl(
+          <Feather name={icon} size={24} style={styles.controls.back,{color: '#fff'}}/>,
+          this.methods.toggleFullscreen,
+          styles.controls.fullscreen,
+        )}
+      </View>
+    )
+    
   }
 
 
@@ -1233,11 +1257,21 @@ export default class VideoPlayer extends Component {
    * Show our timer.
    */
   renderTimer() {
-    return this.renderControl(
-      <Text style={styles.controls.timerText}>{this.calculateTime()}</Text>,
-      this.methods.toggleTimer,
-      styles.controls.timer,
-    );
+    if(this.props.isLive == true){
+      return (
+        <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', marginLeft: 16}}>
+            <View style={{height: 8, width: 8, borderRadius: 4, backgroundColor: '#F65858'}}/>
+            <Text style={{fontSize: 12, fontFamily: 'Roboto', color: 'white', fontWeight: '500'}}> LIVE</Text>
+        </View>
+      )
+    }else{
+      return this.renderControl(
+        <Text style={styles.controls.timerText}>{this.calculateTime()}</Text>,
+        this.methods.toggleTimer,
+        styles.controls.timer,
+      );
+    }
+    
   }
 
   /**
@@ -1437,7 +1471,7 @@ const styles = {
     },
     bottomControlGroup: {
       alignSelf: 'stretch',
-      alignItems: 'center',
+      alignItems: 'flex-end',
       justifyContent: 'space-between',
       marginBottom: -10,
     },
