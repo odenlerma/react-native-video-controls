@@ -20,6 +20,13 @@ import padStart from 'lodash/padStart';
 import Feather from 'react-native-vector-icons/Feather'
 import HeartTip from './assets/heart-tip.svg';
 import TipMe from './assets/tip-me.svg'
+// somewhere in your app
+import {
+  Menu,
+  MenuOptions,
+  MenuOption,
+  MenuTrigger,
+} from 'react-native-popup-menu'
 
 const FlexButton = Platform.OS == 'ios' ? TouchableOpacity : TouchableNativeFeedback;
 
@@ -40,13 +47,17 @@ export default class VideoPlayer extends Component {
     title: '',
     rate: 1,
     disableSettings: false,
+    disableBack: false,
     onPause: ()=>{},
     onPlay: ()=> {},
     onSettings: ()=>{},
     onSkipBack: ()=>{},
     onSkipForward: ()=>{},
     isLive: false,
+    childSettings: <Feather name='more-vertical' size={24} style={{color: '#fff'}}/>,
     onPressTip: ()=>{},
+    showControls: true,
+    hideTopBar: true
   };
 
   constructor(props) {
@@ -540,6 +551,7 @@ export default class VideoPlayer extends Component {
     if (this.props.navigator && this.props.navigator.pop) {
       this.props.navigator.pop();
     } else {
+      
       console.warn(
         'Warning: _onBack requires navigator property to function. Either modify the onBack prop or pass a navigator prop',
       );
@@ -967,7 +979,6 @@ export default class VideoPlayer extends Component {
       ? this.renderNullControl()
       : this.renderSettings();
 
-
     return (
       <Animated.View
         style={[
@@ -1010,7 +1021,9 @@ export default class VideoPlayer extends Component {
    */
   renderSettings() {
     return this.renderControl(
-      <Feather name='more-vertical' size={24} style={{color: '#fff'}}/>
+      <React.Fragment>
+          {this.props.childSettings}
+      </React.Fragment>
       ,
       this.events.onSettings,
       styles.controls.back,
@@ -1344,11 +1357,15 @@ export default class VideoPlayer extends Component {
             style={[styles.player.video, this.styles.videoStyle]}
             source={this.props.source}
           />
-          {this.renderError()}
-          {this.renderLoader()}
-          {this.renderTopControls()}
-          {this.renderPlayPauseControls()}
-          {this.renderBottomControls()}
+          {this.props.showControls && (
+            <React.Fragment>
+              {this.renderError()}
+              {this.renderLoader()}
+              {this.renderTopControls()}
+              {this.renderPlayPauseControls()}
+              {this.renderBottomControls()}
+            </React.Fragment>
+          )}
         </View>
       </TouchableWithoutFeedback>
     );
