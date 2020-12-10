@@ -768,6 +768,12 @@ export default class VideoPlayer extends Component {
         paused: nextProps.paused,
       });
     }
+    
+    if (this.state.isFullscreen !== nextProps.isFullscreen) {
+      this.setState({
+        isFullscreen: nextProps.isFullscreen,
+      });
+    }
 
     if (this.styles.videoStyle !== nextProps.videoStyle) {
       this.styles.videoStyle = nextProps.videoStyle;
