@@ -57,7 +57,8 @@ export default class VideoPlayer extends Component {
     childSettings: <Feather name='more-vertical' size={24} style={{color: '#fff'}}/>,
     onPressTip: ()=>{},
     showControls: true,
-    hideTopBar: true
+    hideTopBar: true,
+    customLoader: null
   };
 
   constructor(props) {
@@ -1298,6 +1299,7 @@ export default class VideoPlayer extends Component {
    */
   renderLoader() {
     if (this.state.loading) {
+      if(customLoader != null) return customLoader
       return (
         <View style={styles.loader.container}>
           <Animated.Image
