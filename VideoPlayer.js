@@ -673,10 +673,14 @@ export default class VideoPlayer extends Component {
    *
    * @param {float} time time to seek to in ms
    */
-  seekTo(time = 0) {
+  seekTo(time = 0, tolerance = null) {
     let state = this.state;
     state.currentTime = time;
-    this.player.ref.seek(time);
+    if(tolerance){
+      this.player.ref.seek(time, tolerance);
+    }else{
+      this.player.ref.seek(time);
+    }
     this.setState(state);
   }
 
