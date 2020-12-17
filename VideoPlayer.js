@@ -1304,7 +1304,7 @@ export default class VideoPlayer extends Component {
    */
   renderLoader() {
     if (this.state.loading) {
-      if(customLoader != null) return customLoader
+      if(this.props.customLoader != null) return (<View style={styles.loader.container}>{this.props.customLoader}</View>)
       return (
         <View style={styles.loader.container}>
           <Animated.Image
