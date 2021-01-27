@@ -53,12 +53,12 @@ export default class VideoPlayer extends Component {
     onSettings: ()=>{},
     onSkipBack: ()=>{},
     onSkipForward: ()=>{},
+    onSeekChange: ()=>{},
     isLive: false,
     childSettings: <Feather name='more-vertical' size={24} style={{color: '#fff'}}/>,
     onPressTip: ()=>{},
     showControls: true,
-    hideTopBar: true,
-    customLoader: null
+    hideTopBar: true
   };
 
   constructor(props) {
@@ -122,6 +122,7 @@ export default class VideoPlayer extends Component {
       onLoadStart: this._onLoadStart.bind(this),
       onProgress: this._onProgress.bind(this),
       onSeek: this._onSeek.bind(this),
+      onSeekChange: this.props.onSeekChange,
       onLoad: this._onLoad.bind(this),
       onPause: this.props.onPause.bind(this),
       onPlay: this.props.onPlay.bind(this),
@@ -681,6 +682,7 @@ export default class VideoPlayer extends Component {
     }else{
       this.player.ref.seek(time);
     }
+    
     this.setState(state);
   }
 
@@ -774,7 +776,7 @@ export default class VideoPlayer extends Component {
         paused: nextProps.paused,
       });
     }
-    
+
     if (this.state.isFullscreen !== nextProps.isFullscreen) {
       this.setState({
         isFullscreen: nextProps.isFullscreen,
@@ -889,6 +891,7 @@ export default class VideoPlayer extends Component {
           this.setControlTimeout();
           state.paused = state.originallyPaused;
           state.seeking = false;
+          this.events.onSeekChange(time);
         }
         this.setState(state);
       },
@@ -1304,7 +1307,6 @@ export default class VideoPlayer extends Component {
    */
   renderLoader() {
     if (this.state.loading) {
-      if(this.props.customLoader != null) return (<View style={styles.loader.container}>{this.props.customLoader}</View>)
       return (
         <View style={styles.loader.container}>
           <Animated.Image
@@ -1360,7 +1362,7 @@ export default class VideoPlayer extends Component {
             volume={this.state.volume}
             paused={this.state.paused}
             muted={this.state.muted}
-            rate={this.state.rate}
+            rate={this.state.rate || 1}
             onLoadStart={this.events.onLoadStart}
             onProgress={this.events.onProgress}
             onError={this.events.onError}
