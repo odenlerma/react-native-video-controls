@@ -15,6 +15,7 @@ import {
   View,
   Text,
   Platform,
+  Pressable
 } from 'react-native';
 import padStart from 'lodash/padStart';
 import Feather from 'react-native-vector-icons/Feather'
@@ -30,7 +31,7 @@ import {
 
 import LottieView from 'lottie-react-native';
 
-const FlexButton = Platform.OS == 'ios' ? TouchableOpacity : TouchableNativeFeedback;
+const FlexButton = Pressable;
 
 export default class VideoPlayer extends Component {
   static defaultProps = {
@@ -961,16 +962,18 @@ export default class VideoPlayer extends Component {
    */
   renderControl(children, callback, style = {}) {
     return (
-      <TouchableHighlight
+      <Pressable
         underlayColor="transparent"
         activeOpacity={0.3}
         onPress={() => {
           this.resetControlTimeout();
           callback();
         }}
-        style={[styles.controls.control, style]}>
-        {children}
-      </TouchableHighlight>
+        >
+        <View style={[styles.controls.control, style]}>
+          {children}
+        </View>
+      </Pressable>
     );
   }
 
