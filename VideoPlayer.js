@@ -1370,7 +1370,8 @@ export default class VideoPlayer extends Component {
    */
   render() {
     return (
-      <TouchableWithoutFeedback
+      <Pressable
+        activeOpacity={1}
         onPress={()=>{this.events.onScreenTouch; this._toggleControls()}}
         style={[styles.player.container, this.styles.containerStyle]}>
         <View style={[styles.player.container, this.styles.containerStyle]}>
@@ -1401,7 +1402,7 @@ export default class VideoPlayer extends Component {
             </React.Fragment>
           )}
         </View>
-      </TouchableWithoutFeedback>
+      </Pressable>
     );
   }
 }
