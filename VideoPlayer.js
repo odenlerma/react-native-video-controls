@@ -15,7 +15,7 @@ import {
   View,
   Text,
   Platform,
-  Pressable
+  Pressable,
 } from 'react-native';
 import padStart from 'lodash/padStart';
 import Feather from 'react-native-vector-icons/Feather'
@@ -56,6 +56,7 @@ export default class VideoPlayer extends Component {
     onSettings: ()=>{},
     onSkipBack: ()=>{},
     onSkipForward: ()=>{},
+    onSeekChange: ()=>{},
     isLive: false,
     childSettings: <Feather name='more-vertical' size={24} style={{color: '#fff'}}/>,
     onPressTip: ()=>{},
@@ -124,6 +125,7 @@ export default class VideoPlayer extends Component {
       onHideControls: this.props.onHideControls,
       onLoadStart: this._onLoadStart.bind(this),
       onProgress: this._onProgress.bind(this),
+      onSeekChange: this.props.onSeekChange,
       onSeek: this._onSeek.bind(this),
       onLoad: this._onLoad.bind(this),
       onPause: this.props.onPause.bind(this),
@@ -373,6 +375,7 @@ export default class VideoPlayer extends Component {
    * Reset the timer completely
    */
   resetControlTimeout() {
+    console.log('here')
     this.clearControlTimeout();
     this.setControlTimeout();
   }
@@ -892,6 +895,7 @@ export default class VideoPlayer extends Component {
           this.setControlTimeout();
           state.paused = state.originallyPaused;
           state.seeking = false;
+          this.events.onSeekChange(time);
         }
         this.setState(state);
       },
@@ -962,10 +966,10 @@ export default class VideoPlayer extends Component {
    */
   renderControl(children, callback, style = {}) {
     return (
-      <Pressable
+      <FlexButton
         underlayColor="transparent"
         activeOpacity={0.3}
-        onPress={() => {
+        onPressIn={() => {
           this.resetControlTimeout();
           callback();
         }}
@@ -973,7 +977,7 @@ export default class VideoPlayer extends Component {
         <View style={[styles.controls.control, style]}>
           {children}
         </View>
-      </Pressable>
+      </FlexButton>
     );
   }
 
@@ -1088,7 +1092,7 @@ export default class VideoPlayer extends Component {
         ? 'minimize'
         : 'maximize';
     return (
-      <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end'}}>
+      <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', marginBottom: 7}}>
         {this.props.isLive == true &&(
             <FlexButton onPress={()=>{this.onPressTipComponent()}} activeOpacity={1}>
               <View style={{marginRight: 3, marginBottom: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
@@ -1370,7 +1374,7 @@ export default class VideoPlayer extends Component {
    */
   render() {
     return (
-      <Pressable
+      <FlexButton
         activeOpacity={1}
         onPress={()=>{this.events.onScreenTouch; this._toggleControls()}}
         style={[styles.player.container, this.styles.containerStyle]}>
@@ -1382,7 +1386,7 @@ export default class VideoPlayer extends Component {
             volume={this.state.volume}
             paused={this.state.paused}
             muted={this.state.muted}
-            rate={this.state.rate}
+            rate={this.state.rate || 1}
             onLoadStart={this.events.onLoadStart}
             onProgress={this.events.onProgress}
             onError={this.events.onError}
@@ -1402,7 +1406,7 @@ export default class VideoPlayer extends Component {
             </React.Fragment>
           )}
         </View>
-      </Pressable>
+      </FlexButton>
     );
   }
 }
@@ -1591,7 +1595,7 @@ const styles = {
   seekbar: StyleSheet.create({
     container: {
       alignSelf: 'stretch',
-      height: 22,
+      height: 25,
       //marginLeft: 20,
       //marginRight: 20,
     },
@@ -1616,7 +1620,7 @@ const styles = {
     circle: {
       borderRadius: 12,
       position: 'relative',
-      top: 10,
+      top: 12,
       left: 8,
       height: 12,
       width: 12,
