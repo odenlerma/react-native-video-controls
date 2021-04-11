@@ -278,7 +278,6 @@ export default class VideoPlayer extends Component {
     if (state.scrubbing) {
       state.scrubbing = false;
       state.currentTime = data.currentTime;
-
       // Seeking may be false here if the user released the seek bar while the player was still processing
       // the last seek command. In this case, perform the steps that have been postponed.
       if (!state.seeking) {
@@ -375,7 +374,6 @@ export default class VideoPlayer extends Component {
    * Reset the timer completely
    */
   resetControlTimeout() {
-    console.log('here')
     this.clearControlTimeout();
     this.setControlTimeout();
   }
@@ -794,6 +792,12 @@ export default class VideoPlayer extends Component {
     if (this.styles.containerStyle !== nextProps.style) {
       this.styles.containerStyle = nextProps.style;
     }
+
+    if (this.styles.loading !== nextProps.loading) {
+      this.setState({
+        loading: nextProps.loading,
+      });
+    }
   }
 
   /**
@@ -882,7 +886,7 @@ export default class VideoPlayer extends Component {
        * If you seek to the end of the video we fire the
        * onEnd callback
        */
-      onPanResponderRelease: (evt, gestureState) => {
+      onPanResponderRelease: async (evt, gestureState) => {
         const time = this.calculateTimeFromSeekerPosition();
         let state = this.state;
         if (time >= state.duration && !state.loading) {
@@ -1197,7 +1201,7 @@ export default class VideoPlayer extends Component {
       ? this.renderNullControl()
       : this.renderTimer();
     const seekbarControl = this.props.disableSeekbar
-      ? this.renderNullControl()
+      ? this.renderNullSeekbar()
       : this.renderSeekbar();
     const fullscreenControl = this.props.disableFullscreen
       ? this.renderNullControl()
@@ -1237,34 +1241,49 @@ export default class VideoPlayer extends Component {
         style={styles.seekbar.container}
         collapsable={false}
         {...this.player.seekPanResponder.panHandlers}>
-        <View
-          style={styles.seekbar.track}
-          onLayout={event =>
-            (this.player.seekerWidth = event.nativeEvent.layout.width)
-          }
-          pointerEvents={'none'}>
           <View
-            style={[
-              styles.seekbar.fill,
-              {
-                width: this.state.seekerFillWidth,
-                backgroundColor: this.props.seekColor || '#FFF',
-              },
-            ]}
-            pointerEvents={'none'}
-          />
-        </View>
-        <View
-          style={[styles.seekbar.handle, {left: this.state.seekerPosition}]}
-          pointerEvents={'none'}>
+            style={styles.seekbar.track}
+            onLayout={event =>
+              (this.player.seekerWidth = event.nativeEvent.layout.width)
+            }
+            pointerEvents={'none'}>
+            <View
+              style={[
+                styles.seekbar.fill,
+                {
+                  width: this.state.seekerFillWidth,
+                  backgroundColor: this.props.seekColor || '#FFF',
+                },
+              ]}
+              pointerEvents={'none'}
+            />
+          </View>
           <View
-            style={[
-              styles.seekbar.circle,
-              {backgroundColor: this.props.seekColor || '#FFF'},
-            ]}
-            pointerEvents={'none'}
-          />
-        </View>
+            style={[styles.seekbar.handle, {left: this.state.seekerPosition}]}
+            pointerEvents={'none'}>
+            <View
+              style={[
+                styles.seekbar.circle,
+                {backgroundColor: this.props.seekColor || '#FFF'},
+              ]}
+              pointerEvents={'none'}
+            />
+          </View>
+      </View>
+    );
+  }
+
+
+  /**
+   * Render the seekbar and attach its handlers
+   */
+  renderNullSeekbar() {
+    return (
+      <View
+        style={styles.seekbar.container}
+        collapsable={false}
+      >
+        
       </View>
     );
   }
