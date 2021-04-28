@@ -57,6 +57,8 @@ export default class VideoPlayer extends Component {
     onSkipBack: ()=>{},
     onSkipForward: ()=>{},
     onSeekChange: ()=>{},
+    disableSkipForward: false,
+    disableSkipBack: false,
     isLive: false,
     childSettings: <Feather name='more-vertical' size={24} style={{color: '#fff'}}/>,
     onPressTip: ()=>{},
@@ -1132,9 +1134,9 @@ export default class VideoPlayer extends Component {
    */
   renderSkipBack() {
     return this.renderControl(
-      <Feather name='skip-back' size={24} style={{color: '#fff', marginRight: -16}}/>
+      <Feather name='skip-back' size={24} style={{color: this.props.disableSkipBack ? '#313748' : '#fff', marginRight: -16}}/>
       ,
-      this.events.onSkipBack,
+      this.props.disableSkipBack ? () => {} : this.events.onSkipBack,
       styles.controls.back,
     );
   }
@@ -1144,9 +1146,9 @@ export default class VideoPlayer extends Component {
    */
   renderSkipForward() {
     return this.renderControl(
-      <Feather name='skip-forward' size={24} style={{color: '#fff', marginLeft: -16}}/>
+      <Feather name='skip-forward' size={24} style={{color: this.props.disableSkipForward ? '#313748' : '#fff', marginLeft: -16}}/>
       ,
-      this.events.onSkipForward,
+      this.props.disableSkipForward ? () => {} : this.events.onSkipForward,
       styles.controls.back,
     );
   }
@@ -1182,9 +1184,14 @@ export default class VideoPlayer extends Component {
           <View style={styles.loader.container}>
             <SafeAreaView
               style={[styles.controls.row]}>
-              {skipBackControl}
-              {playPauseControl}
-              {skipForwardControl}
+              {!this.props.isLive && (
+                  <React.Fragment>
+                      {skipBackControl}
+                      {playPauseControl}
+                      {skipForwardControl}
+                  </React.Fragment>
+              )}
+              
             </SafeAreaView>
           </View>
         </Animated.View>
@@ -1200,7 +1207,7 @@ export default class VideoPlayer extends Component {
     const timerControl = this.props.disableTimer
       ? this.renderNullControl()
       : this.renderTimer();
-    const seekbarControl = this.props.disableSeekbar
+    const seekbarControl = this.props.disableSeekbar || this.props.isLive
       ? this.renderNullSeekbar()
       : this.renderSeekbar();
     const fullscreenControl = this.props.disableFullscreen
@@ -1326,7 +1333,7 @@ export default class VideoPlayer extends Component {
    * Show our timer.
    */
   renderTimer() {
-    if(this.props.isLive == true){
+    if(this.props.isLive){
       return (
         <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center', marginLeft: 16}}>
             <View style={{height: 8, width: 8, borderRadius: 4, backgroundColor: '#F65858'}}/>
